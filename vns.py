@@ -11,7 +11,7 @@ if __name__ == '__main__':
     costs = firefighter.read_costs(prob)
 
     # Define neighbourhoods list
-    neighborhoods = [neighbours.SwapNeighbourhood(prob)]
+    neighborhoods = [neighbours.SwapNeighbourhood(prob), neighbours.ChangeShiftNeighbourhood(prob)]
 
     # Initialize current solution
     current_solution = initial_schedule
@@ -23,27 +23,27 @@ if __name__ == '__main__':
 
     # Execute the Variable Neighborhood Descent
     while k <= kmax:
-        # Choose the k-th neighbourhood`
+        # Choose the k-th neighbourhood
         neighborhood = neighborhoods[k - 1]
         print(type(neighborhood))
 
         # Generate neighbors using the selected neighbourhood
         neighbors = neighborhood.neighbours(current_solution)
 
-        # Evaluate the neighbors and find the best one
-        improved_neighbor = None
-        improved_neighbor_cost = current_cost
+        # Evaluate the neighbors and find the best improved one
+        best_neighbor = None
+        best_neighbor_cost = current_cost
 
         for neighbor in neighbors:
             neighbor_cost = prob.cost(neighbor, costs)
-            if neighbor_cost < improved_neighbor_cost:
-                improved_neighbor = neighbor
-                improved_neighbor_cost = neighbor_cost
+            if neighbor_cost < best_neighbor_cost:
+                best_neighbor = neighbor
+                best_neighbor_cost = neighbor_cost
 
         # If a better neighbor is found, update the current solution and reset k
-        if improved_neighbor is not None and improved_neighbor_cost < current_cost:
-            current_solution = improved_neighbor
-            current_cost = improved_neighbor_cost
+        if best_neighbor is not None and best_neighbor_cost < current_cost:
+            current_solution = best_neighbor
+            current_cost = best_neighbor_cost
             k = 1
         # If a better neighbor is not found, move to the next neighborhood
         else:

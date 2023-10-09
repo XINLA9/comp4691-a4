@@ -40,35 +40,66 @@ class SwapNeighbourhood(Neighbourhood):
         return result
 
 
-# TODO: Define more neighbourhoods, and remove this comment.
-class SwapWeekendNeighbourhood(Neighbourhood):
+class ChangeShiftNeighbourhood(Neighbourhood):
     """
-    A neighbourhood that swaps the weekend schedules of a firefighter.
+    A schedule s' is a neighbour of a schedule s
+    if it can be obtained by 将一位消防员的班次循环往后推一个
     """
 
     def __init__(self, prob):
-        super().__init__(prob)
+        self._prob = prob
 
     def neighbours(self, schedule):
         result = []
-        nb_weekend_days = self._prob._nb_weeks * 2  # Number of weekend days in the scheduling period
-
+        new_schedule = schedule[:]
         for i in range(self._prob._nb_firefighters):
             # Create a copy of the current schedule
-            new_schedule = schedule[:]
-
-            for day in range(nb_weekend_days):
-                # Get the positions of the weekend days for the firefighter i
-                day_i = day
-
-                # Swap the schedules for the weekend days
-                new_schedule[i][day_i], new_schedule[i][day_i + nb_weekend_days] = new_schedule[i][
-                    day_i + nb_weekend_days], new_schedule[i][day_i]
-
-            # Check if the new schedule is feasible and add it to the result
-            if self._prob.is_feasible(new_schedule) is None:
-                result.append(new_schedule)
+            schedule_list = list(new_schedule[i])
+            for c in range(len(schedule_list)):
+                if schedule_list[c] == 'M':
+                    schedule_list[c] = 'A'
+                elif schedule_list[c] == 'A':
+                    schedule_list[c] = 'N'
+                elif schedule_list[c] == 'N':
+                    schedule_list[c] = 'M'
+            new_schedule[i] = ''.join(schedule_list)
+        if self._prob.is_feasible(new_schedule) is None:
+            result.append(new_schedule)
 
         return result
 
-# eof
+
+class MoveWeekendNeighbourhood(Neighbourhood):
+    """
+    A neighbourhood that moves a firefighter's weekend shift to another weekend.
+    """
+
+    def __init__(self, prob):
+        self._prob = prob
+
+    def neighbours(self, schedule):
+        result = []
+        total_days = self._prob._nb_weeks * 7
+
+        for i in range(self._prob._nb_firefighters):
+            for weekend_start in range(0, total_days, 7):
+                # Copy the current schedule
+                new_schedule = schedule[:]
+
+                # Extract the weekend block for this firefighter
+                weekend_block = new_schedule[i][weekend_start:weekend_start + 2]
+
+                # Check if the firefighter works on the first day of the weekend
+                if weekend_block[0] in ['M', 'A', 'N']:
+                    # Move the weekend block to another weekend
+                    new_weekend_start = random.choice([x for x in range(0, total_days, 7) if x != weekend_start])
+                    new_schedule[i] = (
+                            new_schedule[i][:new_weekend_start] + weekend_block + new_schedule[i][
+                                                                                  new_weekend_start + 2:]
+                    )
+
+                    # Append the modified schedule to the result if feasible
+                    if self._prob.is_feasible(new_schedule) is None:
+                        result.append(new_schedule)
+
+        return result
