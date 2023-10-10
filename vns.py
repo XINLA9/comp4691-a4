@@ -11,7 +11,8 @@ if __name__ == '__main__':
     costs = firefighter.read_costs(prob)
 
     # Define neighbourhoods list
-    neighborhoods = [neighbours.SwapNeighbourhood(prob), neighbours.ChangeShiftNeighbourhood(prob)]
+    neighborhoods = [neighbours.SwapNeighbourhood(prob),neighbours.ShiftExtensionNeighbourhood(prob),
+                     neighbours.SwapOneDayNeighbourhood(prob)]
 
     # Initialize current solution
     current_solution = initial_schedule
@@ -25,7 +26,7 @@ if __name__ == '__main__':
     while k <= kmax:
         # Choose the k-th neighbourhood
         neighborhood = neighborhoods[k - 1]
-        print(type(neighborhood))
+        # print(type(neighborhood))
 
         # Generate neighbors using the selected neighbourhood
         neighbors = neighborhood.neighbours(current_solution)
@@ -53,5 +54,6 @@ if __name__ == '__main__':
     if not feasibility:
         # Save the final schedule
         firefighter.save_schedule(current_solution)
+        print(f"The cost of this solution is {current_cost}")
     else:
         print(feasibility)
