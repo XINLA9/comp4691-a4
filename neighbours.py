@@ -127,7 +127,7 @@ class SwapOneDayNeighbourhood(Neighbourhood):
             for j in range(i + 1, self._prob._nb_firefighters):
                 # Swaps one day schedule of firefighters i and j.
                 new_schedule = schedule[:]
-                for day in range(self._prob._nb_weeks * 3):
+                for day in range(self._prob._nb_weeks * 7):
                     temp_shift = new_schedule[i][day]
                     new_schedule[i] = new_schedule[i][:day] + new_schedule[j][day] + new_schedule[i][day + 1:]
                     new_schedule[j] = new_schedule[j][:day] + temp_shift + new_schedule[j][day + 1:]
