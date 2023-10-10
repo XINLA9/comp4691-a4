@@ -31,7 +31,8 @@ def consecutive_numbers(list: List, length: int, elements: Set) -> Dict[int, int
     """
     result = {}
 
-    # We iterate from position 0 to position len(list)*2 and count the number of occurrence.  We reset when we see something else
+    # We iterate from position 0 to position len(list)*2 and count the number of occurrence.  We reset when we see
+    # something else
     have_seen_something_else = False
     nb_consecutives = (
         0  # Only start counting after we have seen something from outside [elements]
@@ -83,11 +84,10 @@ class SchedulingProblem:
 
     def is_feasible(self, schedule: List[str]) -> Optional[str]:
         """
-        Indicates whether the specified schedule is a feasible solution to the problem.
-        A schedule is defined as a vector of strings.
-        schedule[i] represents the schedule of firefighter i (i in [0,...,NB_firefighterS-1]).
-        schedule[i][d] represents the shift of firefighter i on Day d (d in [0,...,NB_DAYS-1]), i.e., some element from {'F', 'A', 'P', 'N'}.
-        Any other element is ignored (could be used to annotate a solution).
+        Indicates whether the specified schedule is a feasible solution to the problem. A schedule is defined as a
+        vector of strings. schedule[i] represents the schedule of firefighter i (i in [0,...,NB_firefighterS-1]).
+        schedule[i][d] represents the shift of firefighter i on Day d (d in [0,...,NB_DAYS-1]), i.e., some element
+        from {'F', 'A', 'P', 'N'}. Any other element is ignored (could be used to annotate a solution).
 
         This method returns a string describing one reason why the specified schedule is not valid.
         In other words, the schedule is feasible iff this method returns None.

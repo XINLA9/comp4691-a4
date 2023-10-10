@@ -11,7 +11,7 @@ if __name__ == '__main__':
     costs = firefighter.read_costs(prob)
 
     # Define neighbourhoods list
-    neighborhoods = [neighbours.SwapNeighbourhood(prob),neighbours.ShiftExtensionNeighbourhood(prob),
+    neighborhoods = [neighbours.SwapNeighbourhood(prob),neighbours.OneDayShiftNeighbourhood(prob),
                      neighbours.SwapOneDayNeighbourhood(prob)]
 
     # Initialize current solution

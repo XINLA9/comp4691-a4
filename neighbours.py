@@ -41,9 +41,9 @@ class SwapNeighbourhood(Neighbourhood):
         return result
 
 
-class MoveWeekendNeighbourhood(Neighbourhood):
+class SwapWeekendNeighbourhood(Neighbourhood):
     """
-    排班 s' 是通过将一个消防员的
+    Attain a new neighbors by swap a firefighter's shifts on different weekend
     """
 
     def __init__(self, prob):
@@ -77,11 +77,10 @@ class MoveWeekendNeighbourhood(Neighbourhood):
         return result
 
 
-class ShiftExtensionNeighbourhood(Neighbourhood):
+class OneDayShiftNeighbourhood(Neighbourhood):
     """
-    该邻域通过将一个消防员的某段排班延长或缩短一天来获得一个邻居
+    该邻域通过将一个消防员的某段连续工作排班延长或缩短一天来获得一个邻居
     """
-
     def __init__(self, prob):
         self._prob = prob
 
@@ -89,23 +88,30 @@ class ShiftExtensionNeighbourhood(Neighbourhood):
         result = []
 
         for i in range(self._prob._nb_firefighters):
-            # Firstly find all consecutive working shifts with function
+            # Firstly find all consecutive working shifts of a firefighter with function
             consecutive_shifts = firefighter.consecutive_numbers(schedule[i], len(schedule), {"M", "A", "N"})
             # print(f"the {i}th firefight schedule is {schedule[i]}")
             for start_day, length in consecutive_shifts.items():
                 end_day = start_day + length - 1
+                # Extend the consecutive shifts
                 if length <= 4 and end_day < 20:
                     new_schedule = schedule[:]
                     new_schedule[i] = (
-                                new_schedule[i][:end_day] + new_schedule[i][end_day] + new_schedule[i][end_day + 1:])
+                                new_schedule[i][:end_day + 1] + new_schedule[i][end_day + 1] + new_schedule[i][end_day + 1:])
                     # print(new_schedule[i])
                     if self._prob.is_feasible(new_schedule) is None:
                         result.append(new_schedule[:])
+                # Shorten the consecutive shifts
                 if length > 2 and end_day < 20:
+                    next_shift = {'M': 'A', 'A': 'N', 'N': 'M'}[new_schedule[i][end_day]]
                     new_schedule = schedule[:]
-
                     new_schedule[i] = (
-                            new_schedule[i][:end_day] + new_schedule[i][end_day] + new_schedule[i][end_day + 1:])
+                            new_schedule[i][:end_day ] + next_shift + new_schedule[i][end_day:])
+                    if self._prob.is_feasible(new_schedule) is None:
+                        result.append(new_schedule[:])
+                    new_schedule = schedule[:]
+                    new_schedule[i] = (
+                            new_schedule[i][:end_day] + 'F' + new_schedule[i][end_day:])
                     if self._prob.is_feasible(new_schedule) is None:
                         result.append(new_schedule[:])
         print(f"shift extend return {len(result)} neighbors!")
