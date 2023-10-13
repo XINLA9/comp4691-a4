@@ -77,9 +77,10 @@ class SwapWeekendNeighbourhood(Neighbourhood):
         return result
 
 
-class OneDayShiftNeighbourhood(Neighbourhood):
+class ShiftExtensionNeighbourhood(Neighbourhood):
     """
-    该邻域通过将一个消防员的某段连续工作排班延长或缩短一天来获得一个邻居
+    This neighborhood generates a neighbor by extending or shortening a consecutive work shift of a firefighter by
+    one day.
     """
     def __init__(self, prob):
         self._prob = prob
@@ -88,42 +89,41 @@ class OneDayShiftNeighbourhood(Neighbourhood):
         result = []
 
         for i in range(self._prob._nb_firefighters):
-            # Firstly find all consecutive working shifts of a firefighter with function
-            consecutive_shifts = firefighter.consecutive_numbers(schedule[i], len(schedule), {"M", "A", "N"})
-            # print(f"the {i}th firefight schedule is {schedule[i]}")
-            for start_day, length in consecutive_shifts.items():
-                end_day = start_day + length - 1
-                # Extend the consecutive shifts
-                if length <= 4 and end_day < 20:
-                    new_schedule = schedule[:]
-                    new_schedule[i] = (
-                                new_schedule[i][:end_day + 1] + new_schedule[i][end_day + 1] + new_schedule[i][end_day + 1:])
-                    # print(new_schedule[i])
-                    if self._prob.is_feasible(new_schedule) is None:
-                        result.append(new_schedule[:])
-                # Shorten the consecutive shifts
-                if length > 2 and end_day < 20:
-                    next_shift = {'M': 'A', 'A': 'N', 'N': 'M'}[new_schedule[i][end_day]]
-                    new_schedule = schedule[:]
-                    new_schedule[i] = (
-                            new_schedule[i][:end_day ] + next_shift + new_schedule[i][end_day:])
-                    if self._prob.is_feasible(new_schedule) is None:
-                        result.append(new_schedule[:])
-                    new_schedule = schedule[:]
-                    new_schedule[i] = (
-                            new_schedule[i][:end_day] + 'F' + new_schedule[i][end_day:])
-                    if self._prob.is_feasible(new_schedule) is None:
-                        result.append(new_schedule[:])
-        print(f"shift extend return {len(result)} neighbors!")
+            # Firstly find a consecutive working shifts of a firefighter with function
+            for shift in {"M", "A", "N"}:
+                consecutive_shifts = firefighter.consecutive_numbers(schedule[i], len(schedule), {shift})
+                for start_day, length in consecutive_shifts.items():
+                    end_day = start_day + length - 1
+                    # Extend the consecutive shifts, set the next day with same shift
+                    if length <= 4 and end_day < 20:
+                        new_schedule = schedule[:]
+                        new_schedule[i] = (
+                                    new_schedule[i][:end_day + 1] + new_schedule[i][end_day] + new_schedule[i][end_day + 2:])
+                        if self._prob.is_feasible(new_schedule) is None:
+                            result.append(new_schedule[:])
+                    # Shorten the consecutive shifts, replace the end day with next shift or rest
+                    if length > 2 and end_day < 20:
+                        next_shift = {'M': 'A', 'A': 'N', 'N': 'M'}[new_schedule[i][end_day]]
+                        new_schedule = schedule[:]
+                        # replace the end day with next shift
+                        new_schedule[i] = (
+                                new_schedule[i][:end_day] + next_shift + new_schedule[i][end_day + 1:])
+                        if self._prob.is_feasible(new_schedule) is None:
+                            result.append(new_schedule[:])
+                        new_schedule = schedule[:]
+                        # replace the end day with next rest day
+                        new_schedule[i] = (
+                                new_schedule[i][:end_day] + 'F' + new_schedule[i][end_day + 1:])
+                        if self._prob.is_feasible(new_schedule) is None:
+                            result.append(new_schedule[:])
+        print(f"one day change return {len(result)} neighbors!")
         return result
 
 
 class SwapOneDayNeighbourhood(Neighbourhood):
     """
-    A schedule s' is a neighbour of a schedule s
-    if it can be obtained by swapping one day schedule of exactly two firefighters.
+    This neighborhood generates a neighbor by swapping one day schedule of exactly two firefighters.
     """
-
     def __init__(self, prob) -> None:
         self._prob = prob
 
@@ -139,7 +139,29 @@ class SwapOneDayNeighbourhood(Neighbourhood):
                     new_schedule[j] = new_schedule[j][:day] + temp_shift + new_schedule[j][day + 1:]
                     if self._prob.is_feasible(new_schedule) is None:
                         result.append(new_schedule[:])
-                # if not self._prob.is_feasible(new_schedule) == None: continue No need to test for feasibility: this
-                # new schedule is guaranteed to be feasible (assuming the specified one was feasible).
+
+        print(f"swap one day return {len(result)} neighbors!")
+        return result
+
+class SwapOneDayNeighbourhood(Neighbourhood):
+    """
+    This neighborhood generates a neighbor by swapping one day schedule of exactly two firefighters.
+    """
+    def __init__(self, prob) -> None:
+        self._prob = prob
+
+    def neighbours(self, schedule):
+        result = []
+        for i in range(self._prob._nb_firefighters):
+            for j in range(i + 1, self._prob._nb_firefighters):
+                # Swaps one day schedule of firefighters i and j.
+                new_schedule = schedule[:]
+                for day in range(self._prob._nb_weeks * 7):
+                    temp_shift = new_schedule[i][day]
+                    new_schedule[i] = new_schedule[i][:day] + new_schedule[j][day] + new_schedule[i][day + 1:]
+                    new_schedule[j] = new_schedule[j][:day] + temp_shift + new_schedule[j][day + 1:]
+                    if self._prob.is_feasible(new_schedule) is None:
+                        result.append(new_schedule[:])
+
         print(f"swap one day return {len(result)} neighbors!")
         return result
