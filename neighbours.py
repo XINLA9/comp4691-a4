@@ -82,6 +82,7 @@ class ShiftExtensionNeighbourhood(Neighbourhood):
     This neighborhood generates a neighbor by extending or shortening a consecutive work shift of a firefighter by
     one day.
     """
+
     def __init__(self, prob):
         self._prob = prob
 
@@ -98,7 +99,8 @@ class ShiftExtensionNeighbourhood(Neighbourhood):
                     if length <= 4 and end_day < 20:
                         new_schedule = schedule[:]
                         new_schedule[i] = (
-                                    new_schedule[i][:end_day + 1] + new_schedule[i][end_day] + new_schedule[i][end_day + 2:])
+                                new_schedule[i][:end_day + 1] + new_schedule[i][end_day] + new_schedule[i][
+                                                                                           end_day + 2:])
                         if self._prob.is_feasible(new_schedule) is None:
                             result.append(new_schedule[:])
                     # Shorten the consecutive shifts, replace the end day with next shift or rest
@@ -124,6 +126,7 @@ class SwapOneDayNeighbourhood(Neighbourhood):
     """
     This neighborhood generates a neighbor by swapping one day schedule of exactly two firefighters.
     """
+
     def __init__(self, prob) -> None:
         self._prob = prob
 
@@ -132,8 +135,8 @@ class SwapOneDayNeighbourhood(Neighbourhood):
         for i in range(self._prob._nb_firefighters):
             for j in range(i + 1, self._prob._nb_firefighters):
                 # Swaps one day schedule of firefighters i and j.
-                new_schedule = schedule[:]
                 for day in range(self._prob._nb_weeks * 7):
+                    new_schedule = schedule[:]
                     temp_shift = new_schedule[i][day]
                     new_schedule[i] = new_schedule[i][:day] + new_schedule[j][day] + new_schedule[i][day + 1:]
                     new_schedule[j] = new_schedule[j][:day] + temp_shift + new_schedule[j][day + 1:]
@@ -143,25 +146,26 @@ class SwapOneDayNeighbourhood(Neighbourhood):
         print(f"swap one day return {len(result)} neighbors!")
         return result
 
+
 class ChangOneDayNeighbourhood(Neighbourhood):
     """
     This neighborhood generates a neighbor by swapping one day schedule of exactly two firefighters.
     """
+
     def __init__(self, prob) -> None:
         self._prob = prob
 
     def neighbours(self, schedule):
         result = []
         for i in range(self._prob._nb_firefighters):
-            for j in range(i + 1, self._prob._nb_firefighters):
-                # Swaps one day schedule of firefighters i and j.
-                new_schedule = schedule[:]
                 for day in range(self._prob._nb_weeks * 7):
-                    temp_shift = new_schedule[i][day]
-                    new_schedule[i] = new_schedule[i][:day] + new_schedule[j][day] + new_schedule[i][day + 1:]
-                    new_schedule[j] = new_schedule[j][:day] + temp_shift + new_schedule[j][day + 1:]
-                    if self._prob.is_feasible(new_schedule) is None:
-                        result.append(new_schedule[:])
+                    for k in {'M', 'N', 'A', 'F'}:
+                        # Swaps one day schedule of firefighters i.
+                        new_schedule = schedule[:]
+                        if new_schedule[i][day] != k:
+                            new_schedule[i] = new_schedule[i][:day] + k + new_schedule[i][day+1:]
+                            if self._prob.is_feasible(new_schedule) is None:
+                                result.append(new_schedule[:])
 
         print(f"swap one day return {len(result)} neighbors!")
         return result
