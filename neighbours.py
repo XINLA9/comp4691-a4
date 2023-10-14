@@ -143,7 +143,7 @@ class SwapOneDayNeighbourhood(Neighbourhood):
         print(f"swap one day return {len(result)} neighbors!")
         return result
 
-class SwapOneDayNeighbourhood(Neighbourhood):
+class ChangOneDayNeighbourhood(Neighbourhood):
     """
     This neighborhood generates a neighbor by swapping one day schedule of exactly two firefighters.
     """
