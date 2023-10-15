@@ -39,7 +39,6 @@ def destroy(schedule: list, x: int) -> list:
         schedule = destroy2(schedule)
     elif x == 3:
         schedule = destroy3(schedule)
-
     return schedule
 
 
@@ -57,7 +56,6 @@ def repair(schedule, prob, costs):
 
 
 if __name__ == '__main__':
-    # TODO: Implement Large Neighbourhood Search
 
     # Load the initial schedule from example.sched
     schedule = firefighter.load_schedule("example.sched")
@@ -66,28 +64,24 @@ if __name__ == '__main__':
     # Initialize the problem and costs
     prob = firefighter.SchedulingProblem()
     costs = firefighter.read_costs(prob)
-    mb = ModelBuilder(prob)
-    model = mb.build_model(costs)
 
     # Define LNS parameters
     num_destroy_methods = 3
 
     # Execute the Large Neighborhood Search for each destroy method
-    for method in range(1, num_destroy_methods + 1):
+    for x in range(1, num_destroy_methods + 1):
         current_solution = firefighter.load_last_schedule()
         current_cost = prob.cost(current_solution, costs)
 
-        print(f"Starting LNS with destroy method {method}")
-
-        # Set the number of iterations (you can adjust this)
+        # Set the number of iterations
         max_iterations = 100
 
         for iteration in range(max_iterations):
             # Destroy part of the current solution
-            destroyed_solution = destroy_schedule(current_solution, method)
+            destroyed_solution = destroy(current_solution, x)
 
             # Repair the destroyed solution using your repair method (you need to implement this)
-            repaired_solution = repair_schedule(destroyed_solution, prob, costs)
+            repaired_solution = repair(destroyed_solution, prob, costs)
 
             # Evaluate the repaired solution
             repaired_cost = prob.cost(repaired_solution, costs)
@@ -101,6 +95,6 @@ if __name__ == '__main__':
         if not feasibility:
             # Save the final schedule
             firefighter.save_schedule(current_solution)
-            print(f"The cost of this solution with destroy method {method} is {current_cost}")
+            print(f"The cost of this solution with destroy method {x} is {current_cost}")
         else:
             print(feasibility)
