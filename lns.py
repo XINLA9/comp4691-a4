@@ -68,33 +68,31 @@ if __name__ == '__main__':
     # Define LNS parameters
     num_destroy_methods = 3
 
-    # Execute the Large Neighborhood Search for each destroy method
-    for x in range(1, num_destroy_methods + 1):
+
+    # Set the number of iterations
+    max_iterations = 100
+
+    for iteration in range(max_iterations):
         current_solution = firefighter.load_last_schedule()
         current_cost = prob.cost(current_solution, costs)
+        # Destroy part of the current solution
+        destroyed_solution = destroy(current_solution, x)
 
-        # Set the number of iterations
-        max_iterations = 100
+        # Repair the destroyed solution using your repair method (you need to implement this)
+        repaired_solution = repair(destroyed_solution, prob, costs)
 
-        for iteration in range(max_iterations):
-            # Destroy part of the current solution
-            destroyed_solution = destroy(current_solution, x)
+        # Evaluate the repaired solution
+        repaired_cost = prob.cost(repaired_solution, costs)
 
-            # Repair the destroyed solution using your repair method (you need to implement this)
-            repaired_solution = repair(destroyed_solution, prob, costs)
+        # If the repaired solution is better than the current solution, update it
+        if repaired_cost < current_cost:
+            current_solution = repaired_solution
+            current_cost = repaired_cost
 
-            # Evaluate the repaired solution
-            repaired_cost = prob.cost(repaired_solution, costs)
-
-            # If the repaired solution is better than the current solution, update it
-            if repaired_cost < current_cost:
-                current_solution = repaired_solution
-                current_cost = repaired_cost
-
-        feasibility = prob.is_feasible(current_solution)
-        if not feasibility:
-            # Save the final schedule
-            firefighter.save_schedule(current_solution)
-            print(f"The cost of this solution with destroy method {x} is {current_cost}")
-        else:
-            print(feasibility)
+    feasibility = prob.is_feasible(current_solution)
+    if not feasibility:
+        # Save the final schedule
+        firefighter.save_schedule(current_solution)
+        print(f"The cost of this solution with destroy method {x} is {current_cost}")
+    else:
+        print(feasibility)
