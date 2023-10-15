@@ -1,17 +1,59 @@
 from random import randint
-
+from pulp import PULP_CBC_CMD
 import firefighter
 from model import ModelBuilder
 
 
-def destroy_schedule(schedule, method):
-    # Implement different destroy methods based on the 'method' parameter
-    # For example, if method is 1, clear the schedule for a random firefighter
-    if method == 1:
-        random_firefighter_index = randint(0, len(schedule) - 1)
-        schedule[random_firefighter_index] = "O" * len(
-            schedule[random_firefighter_index])  # Clear the schedule for that firefighter
+def destroy1(schedule: list) -> list:
+    random_firefighter_index = randint(0, len(schedule) - 1)
+    schedule[random_firefighter_index] = "O" * len(
+        schedule[random_firefighter_index])  # Clear the schedule for that firefighter
     return schedule
+
+
+def destroy2(schedule: list) -> list:
+    # Determine the number of firefighters to clear their schedule
+    num_firefighters_to_clear = randint(1, len(schedule))
+    # Randomly select firefighters without duplicates
+    firefighters_to_clear = set()
+    while len(firefighters_to_clear) < num_firefighters_to_clear:
+        random_firefighter_index = randint(0, len(schedule) - 1)
+        firefighters_to_clear.add(random_firefighter_index)
+    for firefighter_index in firefighters_to_clear:
+        schedule[firefighter_index] = "O" * len(schedule[firefighter_index])
+
+
+def destroy3(schedule: list) -> list:
+    random_firefighter_index = randint(0, len(schedule) - 1)
+    schedule[random_firefighter_index] = "O" * len(
+        schedule[random_firefighter_index])  # Clear the schedule for that firefighter
+    return schedule
+
+
+def destroy(schedule: list, x: int) -> list:
+    # Implement different destroy methods based on the 'x' parameter
+    # For example, if method is x, clear the schedule for a random firefighter
+    if x == 1:
+        schedule = destroy1(schedule)
+    elif x == 2:
+        schedule = destroy2(schedule)
+    elif x == 3:
+        schedule = destroy3(schedule)
+
+    return schedule
+
+
+def repair(schedule, prob, costs):
+    # Implement the repair method using the Pulp model and ModelBuilder
+    mb = ModelBuilder(prob)
+    model = mb.build_model(costs)
+    res = model.solve(PULP_CBC_CMD(msg=False))
+    if res != 1:
+        print('No solution found')
+        return schedule  # Return the original schedule if no solution is found
+    else:
+        repaired_solution = mb.extract_solution()
+        return repaired_solution
 
 
 if __name__ == '__main__':
