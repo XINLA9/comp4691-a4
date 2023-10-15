@@ -8,7 +8,7 @@ from firefighter import (
 )
 
 if __name__ == "__main__":
-    MY_ID = 46918691
+    MY_ID = 46918693
     random.seed(MY_ID)
 
     with open("costs.scosts", "w") as f:

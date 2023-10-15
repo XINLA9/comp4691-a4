@@ -1,3 +1,6 @@
+from random import randint, random
+
+import firefighter
 from firefighter import SchedulingProblem, save_schedule
 from sys import argv
 
@@ -9,7 +12,26 @@ def create_solution(seed):
 
     TODO: Implement this method.
     """
-    pass
+    # Set the random seed for reproducibility
+
+
+    # Initialize parameters and variables
+    num_firefighters = 20
+    days = 21
+    shifts = ["M", "A", "N", "F"]
+    schedule = []
+
+    for _ in range(num_firefighters):
+        # Generate a random schedule for each firefighter
+        firefighter_schedule = ""
+        for day in range(days):
+            # Generate a random shift
+            shift = shifts[randint(0, 3)]
+            firefighter_schedule += shift
+        schedule.append(firefighter_schedule)
+    schedule = firefighter.load_schedule("example.sched")
+
+    return schedule
 
 
 if __name__ == "__main__":

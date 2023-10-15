@@ -4,19 +4,25 @@ import neighbours
 
 if __name__ == '__main__':
     # Load the initial schedule from example.sched
-    initial_schedule = firefighter.load_schedule("example.sched")
+    schedule = firefighter.load_schedule("example.sched")
+    firefighter.save_schedule(schedule)
 
     # Initialize the problem and costs
     prob = firefighter.SchedulingProblem()
     costs = firefighter.read_costs(prob)
 
     # Define neighbourhoods list
-    neighborhoods = [neighbours.SwapNeighbourhood(prob), neighbours.ChangOneDayNeighbourhood(prob),
-                     neighbours.SwapOneDayNeighbourhood(prob)]
+    neighborhoods = [
+        # neighbours.SwapNeighbourhood(prob),
+        neighbours.ChangOneDayNeighbourhood(prob),
+        neighbours.OffDutyMoveNeighbourhood(prob),
+        neighbours.SwapDaysNeighbourhood(prob),
+        neighbours.TwoOffDutyMoveNeighbourhood(prob),
+
+    ]
 
     # Initialize current solution
-    current_solution = initial_schedule
-    current_cost = prob.cost(current_solution, costs)
+
 
     # Define your VNS parameters
     kmax = len(neighborhoods)  # Number of neighborhoods
@@ -24,6 +30,8 @@ if __name__ == '__main__':
 
     # Execute the Variable Neighborhood Descent
     while k <= kmax:
+        current_solution = firefighter.load_last_schedule()
+        current_cost = prob.cost(current_solution, costs)
         # Choose the k-th neighbourhood
         neighborhood = neighborhoods[k - 1]
         # print(type(neighborhood))
@@ -46,6 +54,7 @@ if __name__ == '__main__':
             current_solution = best_neighbor
             current_cost = best_neighbor_cost
             k = 1
+            firefighter.save_schedule(current_solution)
         # If a better neighbor is not found, move to the next neighborhood
         else:
             k += 1
