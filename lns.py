@@ -6,8 +6,8 @@ from model import ModelBuilder
 
 def destroy1(schedule: list) -> list:
     random_firefighter_index = randint(0, len(schedule) - 1)
-    schedule[random_firefighter_index] = "O" * len(
-        schedule[random_firefighter_index])  # Clear the schedule for that firefighter
+    schedule[random_firefighter_index] = "0"   # Clear the schedule for that firefighter
+    print(f"the {random_firefighter_index} firefighter schedule is destroyed")
     return schedule
 
 
@@ -20,19 +20,19 @@ def destroy2(schedule: list) -> list:
         random_firefighter_index = randint(0, len(schedule) - 1)
         firefighters_to_clear.add(random_firefighter_index)
     for firefighter_index in firefighters_to_clear:
-        schedule[firefighter_index] = "O" * len(schedule[firefighter_index])
+        schedule[firefighter_index] = "0"
+    return schedule
 
 
 def destroy3(schedule: list) -> list:
     random_firefighter_index = randint(0, len(schedule) - 1)
-    schedule[random_firefighter_index] = "O" * len(
-        schedule[random_firefighter_index])  # Clear the schedule for that firefighter
+    schedule[random_firefighter_index] = "0"
     return schedule
 
 
 def destroy(schedule: list, x: int) -> list:
     # Implement different destroy methods based on the 'x' parameter
-    # For example, if method is x, clear the schedule for a random firefighter
+    # For example, if method is 1, clear the schedule for a random firefighter
     if x == 1:
         schedule = destroy1(schedule)
     elif x == 2:
@@ -43,16 +43,23 @@ def destroy(schedule: list, x: int) -> list:
 
 
 def repair(schedule, prob, costs):
-    # Implement the repair method using the Pulp model and ModelBuilder
     mb = ModelBuilder(prob)
     model = mb.build_model(costs)
+
+    for i in range(len(schedule)):
+        if schedule[i] != "0":
+            for d in range(prob._nb_weeks * 7):
+                shift = schedule[i][d]
+                model += (mb._choices[i][d][shift] == 1)
+    # Solve the model with the new constraints
     res = model.solve(PULP_CBC_CMD(msg=False))
     if res != 1:
-        print('No solution found')
+        print('No solution found after repair')
         return schedule  # Return the original schedule if no solution is found
-    else:
-        repaired_solution = mb.extract_solution()
-        return repaired_solution
+    # Extract the repaired solution with the new constraints
+    repaired_solution = mb.extract_solution()
+
+    return repaired_solution
 
 
 if __name__ == '__main__':
@@ -65,18 +72,15 @@ if __name__ == '__main__':
     prob = firefighter.SchedulingProblem()
     costs = firefighter.read_costs(prob)
 
-    # Define LNS parameters
-    num_destroy_methods = 3
-
-
     # Set the number of iterations
-    max_iterations = 100
+    max_iterations = 20
 
     for iteration in range(max_iterations):
         current_solution = firefighter.load_last_schedule()
         current_cost = prob.cost(current_solution, costs)
         # Destroy part of the current solution
-        destroyed_solution = destroy(current_solution, x)
+        print(f"The {iteration}th iteration")
+        destroyed_solution = destroy(current_solution, 3)
 
         # Repair the destroyed solution using your repair method (you need to implement this)
         repaired_solution = repair(destroyed_solution, prob, costs)
@@ -88,11 +92,12 @@ if __name__ == '__main__':
         if repaired_cost < current_cost:
             current_solution = repaired_solution
             current_cost = repaired_cost
+            firefighter.save_schedule(current_solution)
 
     feasibility = prob.is_feasible(current_solution)
     if not feasibility:
         # Save the final schedule
         firefighter.save_schedule(current_solution)
-        print(f"The cost of this solution with destroy method {x} is {current_cost}")
+        print(f"The cost of this solution with destroy method {1} is {current_cost}")
     else:
         print(feasibility)
