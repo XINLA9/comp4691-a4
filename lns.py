@@ -76,13 +76,15 @@ if __name__ == '__main__':
     max_iterations = 20
 
     for iteration in range(max_iterations):
+
         current_solution = firefighter.load_last_schedule()
         current_cost = prob.cost(current_solution, costs)
-        # Destroy part of the current solution
+
         print(f"The {iteration}th iteration")
+        # Destroy part of the current solution
         destroyed_solution = destroy(current_solution, 3)
 
-        # Repair the destroyed solution using your repair method (you need to implement this)
+        # Repair the destroyed solution
         repaired_solution = repair(destroyed_solution, prob, costs)
 
         # Evaluate the repaired solution
